@@ -1,36 +1,28 @@
-import { ref, toRef, readonly } from "vue";
+import { ref, readonly } from "vue";
 import axios from "axios";
 
-export default (url) => {
-  const URL = url;
-
-  const progress = ref(0);
+export default (url, uploadProgress = 0) => {
+  let fileUrl = ref("");
+  let progress = ref(uploadProgress);
 
   const onUploadProgress = (event) => {
     progress.value = Math.round((event.loaded * 100) / event.total);
   };
 
-  const uploadFile = async (fileChooser) => {
-    // const URL = "http://localhost:3000/api/v1/images";
-
+  const uploadFile = async (file) => {
     let formData = new FormData();
 
-    let files = Array.from(fileChooser.value.files);
+    formData.append("file", file);
 
-    files.forEach((file) => {
-      formData.append("file", file);
-    });
+    const axiosOptions = { onUploadProgress };
 
-    try {
-      await axios.post(URL, formData, { onUploadProgress });
-    } catch (error) {
-      console.error(error);
-    }
+    const { data } = await axios.post(url, formData, axiosOptions);
+
+    fileUrl.value = data.url;
   };
 
   return {
-    progress: readonly(progress),
+    fileUrl: readonly(fileUrl),
     uploadFile,
-    onUploadProgress,
   };
 };
