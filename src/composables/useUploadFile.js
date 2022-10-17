@@ -10,15 +10,19 @@ export default (url, uploadProgress = 0) => {
   };
 
   const uploadFile = async (file) => {
-    let formData = new FormData();
+    try {
+      let formData = new FormData();
 
-    formData.append("file", file);
+      formData.append("file", file);
 
-    const axiosOptions = { onUploadProgress };
+      const axiosOptions = { onUploadProgress };
 
-    const { data } = await axios.post(url, formData, axiosOptions);
+      const { data } = await axios.post(url, formData, axiosOptions);
 
-    fileUrl.value = data.url;
+      fileUrl.value = data.url;
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return {
