@@ -1,36 +1,21 @@
 <script setup>
-import { ref, provide } from "vue";
+import { storeToRefs } from "pinia";
 
-import UploadImage from "../components/UploadImage.vue";
-import UploadProgressBar from "../components/UploadProgressBar.vue";
-import UploadImageCompleted from "../components/UploadImageCompleted.vue";
+import useStore from "@/store";
 
-const isSelecting = ref(true);
-const isUploading = ref(false);
-const isComplete = ref(false);
+import UploadImage from "@/components/UploadImage.vue";
+import UploadProgressBar from "@/components/UploadProgressBar.vue";
+import UploadImageCompleted from "@/components/UploadImageCompleted.vue";
 
-const uploadProgress = ref(0);
-const imgUrl = ref(null);
-
-provide("flags", {
-  isSelecting,
-  isUploading,
-  isComplete,
-  uploadProgress,
-  imgUrl,
-});
+const { isSelecting, isUploading, isComplete, uploadProgress } = storeToRefs(useStore());
 </script>
 
 <template>
   <UploadImage v-show="isSelecting"></UploadImage>
-  <UploadProgressBar
-    v-show="isUploading"
-    :progress="uploadProgress"
-  ></UploadProgressBar>
-  <UploadImageCompleted
-    v-show="isComplete"
-    :imgUrl="imgUrl"
-  ></UploadImageCompleted>
+
+  <UploadProgressBar v-show="isUploading" :progress="uploadProgress"></UploadProgressBar>
+
+  <UploadImageCompleted v-show="isComplete"></UploadImageCompleted>
 </template>
 
 <style scoped></style>

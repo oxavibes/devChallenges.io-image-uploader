@@ -1,13 +1,16 @@
 <script setup>
-import { ref, toRefs } from "vue";
+import { ref } from "vue";
+import { storeToRefs } from "pinia";
 
-const props = defineProps({ imgUrl: String });
-
-const { imgUrl } = toRefs(props);
+import useStore from "@/store";
 
 const inputRef = ref(null);
 const imageRef = ref(null);
 const hasImageLoaded = ref(false);
+
+const store = useStore();
+
+const { imgUrl } = storeToRefs(store);
 
 const onClick = () => {
   inputRef.value.select();
@@ -17,8 +20,7 @@ const onClick = () => {
 };
 
 const onLoadImage = () => {
-  hasImageLoaded.value =
-    imageRef.value.complete && imageRef.value.naturalHeight !== 0;
+  hasImageLoaded.value = imageRef.value.complete && imageRef.value.naturalHeight !== 0;
 };
 </script>
 
@@ -27,29 +29,14 @@ const onLoadImage = () => {
     <div class="card-title-skeleton" v-if="!hasImageLoaded"></div>
     <h2 class="card-title" v-else>Uploaded successfully</h2>
 
-    <div
-      class="card-img-preview"
-      :class="[{ 'card-img-skeleton': !hasImageLoaded }]"
-    >
-      <img
-        v-show="hasImageLoaded"
-        ref="imageRef"
-        @load="onLoadImage"
-        :src="imgUrl"
-        alt="Uploaded image"
-      />
+    <div class="card-img-preview" :class="[{ 'card-img-skeleton': !hasImageLoaded }]">
+      <img v-show="hasImageLoaded" ref="imageRef" @load="onLoadImage" :src="imgUrl" alt="Uploaded image" />
     </div>
 
     <div class="card-actions-skeleton" v-if="!hasImageLoaded"></div>
 
     <div class="card-actions" v-else>
-      <input
-        ref="inputRef"
-        class="card-input"
-        type="text"
-        disabled
-        :value="imgUrl"
-      />
+      <input ref="inputRef" class="card-input" type="text" disabled :value="imgUrl" />
 
       <button class="card-file-copy-button" @click="onClick">Copy link</button>
     </div>
@@ -92,13 +79,7 @@ const onLoadImage = () => {
 .card-actions-skeleton {
   border-radius: 6px;
   background: #eee;
-  background-image: linear-gradient(
-    to right,
-    #d6d7d8 0%,
-    #e2e3e4 10%,
-    #d6d7d8 20%,
-    #d6d7d8 100%
-  );
+  background-image: linear-gradient(to right, #d6d7d8 0%, #e2e3e4 10%, #d6d7d8 20%, #d6d7d8 100%);
   background-size: 200% 100%;
   animation: bgAnimate 1.2s linear infinite;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);

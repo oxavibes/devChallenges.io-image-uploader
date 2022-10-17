@@ -1,37 +1,30 @@
 <script setup>
-import axios from "axios";
-import { ref, inject } from "vue";
+import { ref } from "vue";
+import { storeToRefs } from "pinia";
 
-import useReadUrl from "../composables/useReadUrl";
+import useStore from "@/store";
 
-const { isSelecting, isUploading, isComplete, uploadProgress, imgUrl } =
-  inject("flags");
+import useReadUrl from "@/composables/useReadUrl.js";
+import useUploadFile from "@/composables/useUploadFile.js";
 
-const fileUrl = ref(null);
+const localFileUrl = ref(null);
 const selectedFile = ref(null);
 const fileChooser = ref(null);
 
-const onUploadFile = async () => {
-  const BASE_URL = "http://localhost:5000/api/v1/images";
-  let formData = new FormData();
+const store = useStore();
+const { imgUrl, uploadProgress } = storeToRefs(store);
 
-  formData.append("file", selectedFile.value);
+const onUploadFile = async () => {
+  const { fileUrl, uploadFile } = useUploadFile("http://localhost:5000/api/v1/images", uploadProgress);
 
   try {
-    isSelecting.value = false;
-    isUploading.value = true;
+    store.startUploading();
 
-    const { data } = await axios.post(BASE_URL, formData, {
-      onUploadProgress: (event) => {
-        const progress = Math.round((event.loaded * 100) / event.total);
-        uploadProgress.value = progress;
-      },
-    });
+    await uploadFile(selectedFile.value);
 
-    imgUrl.value = data.url;
+    imgUrl.value = fileUrl;
 
-    isUploading.value = false;
-    isComplete.value = true;
+    store.stopUploading();
   } catch (error) {
     console.error(error);
   }
@@ -40,12 +33,15 @@ const onUploadFile = async () => {
 const onChange = async () => {
   const { readUrl } = useReadUrl();
 
-  const file = fileChooser.value.files[0];
-  const url = await readUrl(file);
+  try {
+    selectedFile.value = fileChooser.value.files[0];
 
-  selectedFile.value = file;
+    const url = await readUrl(selectedFile.value);
 
-  fileUrl.value = `url(${url})`;
+    localFileUrl.value = `url(${url})`;
+  } catch (error) {
+    console.log(error);
+  }
 };
 </script>
 
@@ -55,11 +51,7 @@ const onChange = async () => {
 
     <p class="card-subtitle">File should be jpeg, png...</p>
 
-    <div
-      class="card-img-preview"
-      :class="[!selectedFile ? 'card-default-img' : 'card-selected-img']"
-      @drop.prevent="onDrop"
-    >
+    <div class="card-img-preview" :class="[!selectedFile ? 'card-default-img' : 'card-selected-img']">
       <p v-show="!selectedFile">Drag & Drop your image here</p>
     </div>
 
@@ -73,22 +65,20 @@ const onChange = async () => {
           type="file"
           id="fileChooser"
           ref="fileChooser"
+          @change="onChange"
           accept="image/png, image/jpeg"
           class="card-file-chooser-input"
-          @change="onChange"
         />
       </label>
 
-      <button class="card-file-chooser-button" v-show="selectedFile">
-        Upload file
-      </button>
+      <button class="card-file-chooser-button" v-show="selectedFile">Upload file</button>
     </form>
   </div>
 </template>
 
 <style>
 .card-selected-img {
-  background-image: v-bind(fileUrl);
+  background-image: v-bind(localFileUrl);
   background-size: cover;
 }
 </style>
