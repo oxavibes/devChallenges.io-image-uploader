@@ -4,8 +4,7 @@
 
 Create an Image Uploader application. Use any front-end libraries of your choice. Create your API. Don’t look at the existing solution. Fulfill user stories below:
 
-Your users should be able to:
-
+Users should be able to:
 - Drag and drop an image to upload it
 - Can drag and drop an image to upload it
 - Can choose to select an image from my folder
